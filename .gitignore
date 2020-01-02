@@ -1,2 +1,4 @@
 bin
 .gdb_history
+src/tags
+*.taghl
