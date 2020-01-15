@@ -16,13 +16,16 @@ int main(void) {
 
 	rcc_config_clock(CLOCK_CONFIG_PERFORMANCE, &sysclks);
 
-	if(io_configure(GPIOC, PIN_13, PIN_MODE_OUTPUT | PIN_OPT_OUTPUT_PUSHPULL, 0)) return 0;
+	if(io_configure(GPIOC, PIN_13, IO_MODE_OUTPUT | IO_OUT_PUSH_PULL, 0)) 
+		return 0;
 	io_write(GPIOC, 1, PIN_13);
 
-	timer_tick_init(TIM2, 1000, timeout_cb);
-	timer_start(TIM2);
+	//timer_tick_init(TIM2, 1000, timeout_cb);
+	//timer_start(TIM2);
 
 	for(;;){
+		timer_wait_ms(TIM1, 500, 0);
+		timer_wait_ms(TIM2, 500, timeout_cb);
 	}
 
 	return 0;

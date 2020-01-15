@@ -5,76 +5,80 @@
 extern "C" {
 #endif 
 
-/* --- GPIO pin mask definitions ---------------------------------------- */
-#define PIN_0						(1 << 0)
-#define PIN_1						(1 << 1)
-#define PIN_2						(1 << 2)
-#define PIN_3						(1 << 3)
-#define PIN_4						(1 << 4)
-#define PIN_5						(1 << 5)
-#define PIN_6						(1 << 6)
-#define PIN_7						(1 << 7)
-#define PIN_8						(1 << 8)
-#define PIN_9						(1 << 9)
-#define PIN_10						(1 << 10)
-#define PIN_11						(1 << 11)
-#define PIN_12						(1 << 12)
-#define PIN_13						(1 << 13)
-#define PIN_14						(1 << 14)
-#define PIN_15						(1 << 15)
-#define PIN_ALL						0xFFFF
+//------------------------------------------------------------------------------
+/* GPIO pin mask definitions */
+enum io_pin {
+	PIN_0					= (1 << 0),
+	PIN_1					= (1 << 1),
+	PIN_2					= (1 << 2),
+	PIN_3					= (1 << 3),
+	PIN_4					= (1 << 4),
+	PIN_5					= (1 << 5),
+	PIN_6					= (1 << 6),
+	PIN_7					= (1 << 7),
+	PIN_8					= (1 << 8),
+	PIN_9					= (1 << 9),
+	PIN_10					= (1 << 10),
+	PIN_11					= (1 << 11),
+	PIN_12					= (1 << 12),
+	PIN_13					= (1 << 13),
+	PIN_14					= (1 << 14),
+	PIN_15					= (1 << 15),
+	PIN_ALL					= 0xFFFF
+};
 
-/* --- GPIO pin mode definitions ---------------------------------------- */
-#define PIN_MODE_INPUT				(0)
-#define PIN_MODE_OUTPUT				(1 << 0)
-#define	PIN_MODE_ALTFUNC			(1 << 3 | 1 << 0)
-#define	PIN_MODE_ANALOG				(0)
+//------------------------------------------------------------------------------
+/* GPIO pin mode definitions */
+enum io_mode {
+	IO_MODE_INPUT 			= (0x0),
+	IO_MODE_OUTPUT 			= (0x1), // 10Mhz max
+	IO_MODE_OUTPUT_SLOW 	= (0x3), // 2MHz max
+	IO_MODE_OUTPUT_FAST 	= (0x4)  // 50 MHz max
+};
 
-/* --- GPIO pin option definitions -------------------------------------- */
-/*   none for analog pin */
-#define PIN_OPT_NONE				(0)
+//------------------------------------------------------------------------------
+/* GPIO pin conf definitions */
+enum io_conf {
+	IO_IN_ANALOG			= (0b0   << 2),
+	IO_IN_FLOATING			= (0b1   << 2),
+	IO_IN_PULL_UP			= (0b110 << 2),
+	IO_IN_PULL_DOWN			= (0b010 << 2),
+	IO_OUT_ALT_FNCT			= (0b10  << 2),
+	IO_OUT_PUSH_PULL		= (0b0   << 2),
+	IO_OUT_OPEN_DRAIN		= (0b1   << 2)
+};
 
-/*   pull up/pull down resistor option */
-#define PIN_OPT_RESISTOR_NONE		(1 << 2)
-#define PIN_OPT_RESISTOR_PULLUP		(1 << 4 | 1 << 3)
-#define PIN_OPT_RESISTOR_PULLDOWN	(1 << 3)
+//------------------------------------------------------------------------------
+/* GPIO pin clear */
+#define IO_CLEAR			(0)
 
-/*   push-pull/open drain output option */
-#define	PIN_OPT_OUTPUT_PUSHPULL		(0)
-#define PIN_OPT_OUTPUT_OPENDRAIN	(1 << 2)
+//------------------------------------------------------------------------------
+/* alternate function selection option */
+//TODO not supported for now
+//enum io_alt_fnct {
+//	PIN_OPT_AF0				0x0,
+//	PIN_OPT_AF1				0x1,
+//	PIN_OPT_AF2				0x2,
+//	PIN_OPT_AF3				0x3,
+//	PIN_OPT_AF4				0x4,
+//	PIN_OPT_AF5				0x5,
+//	PIN_OPT_AF6				0x6,
+//	PIN_OPT_AF7				0x7,
+//	PIN_OPT_AF8				0x8,
+//	PIN_OPT_AF9				0x9,
+//	PIN_OPT_AF10			0xA,
+//	PIN_OPT_AF11			0xB,
+//	PIN_OPT_AF12			0xC,
+//	PIN_OPT_AF13			0xD,
+//	PIN_OPT_AF14			0xE,
+//	PIN_OPT_AF15			0xF
+//};
 
-/*   output speed option
- *   - LOW    ~ 2MHz max
- *   - MEDIUM ~ 10MHz max
- *   - FAST   ~ 50MHz max
- **/
-#define	PIN_OPT_OUTPUT_SPEED_LOW	(10 << 0)
-#define	PIN_OPT_OUTPUT_SPEED_MEDIUM (1 << 0)
-#define	PIN_OPT_OUTPUT_SPEED_FAST	(11 << 0)
-
-/*   alternate function selection option */
-#define PIN_OPT_AF0					0x0
-#define PIN_OPT_AF1					0x1
-#define PIN_OPT_AF2					0x2
-#define PIN_OPT_AF3					0x3
-#define PIN_OPT_AF4					0x4
-#define PIN_OPT_AF5					0x5
-#define PIN_OPT_AF6					0x6
-#define PIN_OPT_AF7					0x7
-#define PIN_OPT_AF8					0x8
-#define PIN_OPT_AF9					0x9
-#define PIN_OPT_AF10				0xA
-#define PIN_OPT_AF11				0xB
-#define PIN_OPT_AF12				0xC
-#define PIN_OPT_AF13				0xD
-#define PIN_OPT_AF14				0xE
-#define PIN_OPT_AF15				0xF
-
-/*   irq pin option */
-#define PIN_OPT_IRQ_EDGE_RISE		(1 << 12)
-#define PIN_OPT_IRQ_EDGE_FALL		(2 << 12)
-#define PIN_OPT_IRQ_EDGE_BOTH		(3 << 12)
-
+///*   irq pin option */
+//#define PIN_OPT_IRQ_EDGE_RISE		(1 << 12)
+//#define PIN_OPT_IRQ_EDGE_FALL		(2 << 12)
+//#define PIN_OPT_IRQ_EDGE_BOTH		(3 << 12)
+//
 typedef void (*OnIO)();
 
 /* io_configure
@@ -84,7 +88,7 @@ typedef void (*OnIO)();
  * function 'cb' if not NULL.
  * returns 0 if success
  */
-int io_configure(GPIO_TypeDef *gpio, uint16_t pin_mask, uint32_t pin_cfg, OnIO cb);
+int io_configure(GPIO_TypeDef *gpio, uint16_t pin_mask, uint8_t pin_cfg, OnIO cb);
 
 /* io_read
  *

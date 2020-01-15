@@ -543,7 +543,7 @@ typedef struct
   __IO uint32_t DCR;             /*!< TIM DMA control register,                    Address offset: 0x48 */
   __IO uint32_t DMAR;            /*!< TIM DMA address for full transfer register,  Address offset: 0x4C */
   __IO uint32_t OR;              /*!< TIM option register,                         Address offset: 0x50 */
-}TIM_TypeDef;
+} TIM_TypeDef;
 
 
 /** 
@@ -10639,4 +10639,4 @@ typedef struct
   
   
   
-  /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

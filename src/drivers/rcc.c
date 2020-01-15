@@ -1,5 +1,5 @@
-/** 
-  ==============================================================================
+/*
+==============================================================================
 ##### RCC specific features #####
 ==============================================================================
 [..]  
@@ -176,11 +176,6 @@ static void rcc_set_sysclk(enum rcc_osc osc)
 	while (((RCC->CFGR & 0xC)>>2) != osc);
 }
 
-//void SystemInit(void) {
-//	Clock_t tmp_clk;
-//	rcc_config_clock(CLOCK_CONFIG_PERFORMANCE, &tmp_clk);
-//}
-
 void rcc_config_clock(uint32_t config, Clock_t *sysclks)
 {
 	struct ClockConfig_t *clk;
@@ -245,8 +240,8 @@ void rcc_config_clock(uint32_t config, Clock_t *sysclks)
 	}
 	sysclks->ahb_freq = clk->ahb_freq;
 	sysclks->apb1_freq = clk->apb1_freq;
+	sysclks->apb2_freq = clk->apb2_freq;
 	//TODO check timer frequencies
 	sysclks->apb1_timer_freq = clk->ppre1==RCC_CFGR_PPRE_DIV_NONE ? clk->apb1_freq : 2*clk->apb1_freq;
-	sysclks->apb2_freq = clk->apb2_freq;
 	sysclks->apb2_timer_freq = clk->ppre2==RCC_CFGR_PPRE_DIV_NONE ? clk->apb2_freq : 2*clk->apb2_freq;
 }
