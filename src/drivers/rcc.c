@@ -27,8 +27,8 @@ derived from the System clock (I2S, RTC, ADC, USB OTG FS/SDIO/RNG)
 ==============================================================================
 [..]  
 A delay between an RCC peripheral clock enable and the effective peripheral 
-enabling should be taken into account in order to manage the peripheral read/write 
-from/to registers.
+enabling should be taken into account in order to manage the peripheral 
+read/write from/to registers.
 (+) This delay depends on the peripheral mapping.
 (+) If peripheral is mapped on AHB: the delay is 2 AHB clock cycle 
 after the clock enable bit is set on the hardware register
@@ -66,6 +66,12 @@ register is required.
 /* PPLMUL: PPL multiplier */
 #define RCC_CFGR_PLLMUL(fac)			(fac + 2)
 
+/* ADC: ADCPRE prescalers */
+#define RCC_CFGR_ADCPRE_DIV_2			0x0
+#define RCC_CFGR_ADCPRE_DIV_4			0x1
+#define RCC_CFGR_ADCPRE_DIV_6			0x2
+#define RCC_CFGR_ADCPRE_DIV_8			0x3
+
 enum rcc_osc {
 	RCC_HSI,
 	RCC_HSE,
@@ -81,6 +87,7 @@ struct ClockConfig_t {
 	uint8_t		hpre;
 	uint8_t		ppre1;
 	uint8_t		ppre2;
+	uint8_t		adcpre;
 	uint32_t	flash_cfg;
 	uint32_t	ahb_freq;
 	uint32_t	apb1_freq;
@@ -91,10 +98,11 @@ static struct ClockConfig_t _clock_config[] = {
 	{/* Performance Mode */
 		.type = RCC_PLL,
 		.pll_src = RCC_HSE, //8MHz
-		.pllmul = RCC_CFGR_PLLMUL(9), //freq should noot exceed 72MHz
+		.pllmul = RCC_CFGR_PLLMUL(9), 	//freq should noot exceed 72MHz
 		.hpre = RCC_CFGR_HPRE_DIV_NONE,
-		.ppre1 = RCC_CFGR_PPRE_DIV_2, //freq should not exceed 36MHz
+		.ppre1 = RCC_CFGR_PPRE_DIV_2, 	//freq should not exceed 36MHz
 		.ppre2 = RCC_CFGR_PPRE_DIV_NONE,
+		.adcpre = RCC_CFGR_ADCPRE_DIV_6,	//freq should not exceed 14MHz
 		.flash_cfg = FLASH_ACR_LATENCY_2,
 		.ahb_freq = 72000000,
 		.apb1_freq = 36000000,
@@ -106,6 +114,7 @@ static struct ClockConfig_t _clock_config[] = {
 		.hpre = RCC_CFGR_HPRE_DIV_16,
 		.ppre1 = RCC_CFGR_PPRE_DIV_16,
 		.ppre2 = RCC_CFGR_PPRE_DIV_16,
+		.adcpre = RCC_CFGR_ADCPRE_DIV_2,
 		.flash_cfg = FLASH_ACR_LATENCY_0,
 		.ahb_freq = 500000,
 		.apb1_freq = 500000,
@@ -206,10 +215,11 @@ void rcc_config_clock(uint32_t config, Clock_t *sysclks)
 		//  AHB: AHBCLK > 25MHz
 		//  APB1: APB1CLK <= 36MHz
 		//  APB2: APB2CLK <= 72MHz
-		RCC->CFGR = ( RCC->CFGR & ~((0x3F<<8) | (0xF<<4)) ) |
+		RCC->CFGR = ( RCC->CFGR & ~((0x3F<<8) | (0xF<<4) | (0x3<<14)) ) |
 			((clk->hpre & 0xF) << 4) |
 			((clk->ppre1 & 0x7) << 8) |
-			((clk->ppre2 & 0x7) << 11);
+			((clk->ppre2 & 0x7) << 11)|
+			(clk->adcpre << 14);
 
 		// configure PLL
 		RCC->CFGR &= !(0xF<<18);
@@ -241,7 +251,8 @@ void rcc_config_clock(uint32_t config, Clock_t *sysclks)
 	sysclks->ahb_freq = clk->ahb_freq;
 	sysclks->apb1_freq = clk->apb1_freq;
 	sysclks->apb2_freq = clk->apb2_freq;
-	//TODO check timer frequencies
-	sysclks->apb1_timer_freq = clk->ppre1==RCC_CFGR_PPRE_DIV_NONE ? clk->apb1_freq : 2*clk->apb1_freq;
-	sysclks->apb2_timer_freq = clk->ppre2==RCC_CFGR_PPRE_DIV_NONE ? clk->apb2_freq : 2*clk->apb2_freq;
+	sysclks->apb1_timer_freq = 
+		clk->ppre1==RCC_CFGR_PPRE_DIV_NONE ? clk->apb1_freq : 2*clk->apb1_freq;
+	sysclks->apb2_timer_freq = 
+		clk->ppre2==RCC_CFGR_PPRE_DIV_NONE ? clk->apb2_freq : 2*clk->apb2_freq;
 }

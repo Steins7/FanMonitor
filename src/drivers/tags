@@ -5,6 +5,8 @@
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
 !_TAG_PROGRAM_VERSION	0.0.0	/3fdf28bc/
+ADC_Data	adc.h	/^} ADC_Data;$/;"	t	typeref:struct:__anon0f12ca630108
+ADC_H	adc.h	/^#define ADC_H$/;"	d
 CLOCK_CONFIG_END	rcc.h	/^	CLOCK_CONFIG_END$/;"	e	enum:Clock_config
 CLOCK_CONFIG_PERFORMANCE	rcc.h	/^	CLOCK_CONFIG_PERFORMANCE,$/;"	e	enum:Clock_config
 CLOCK_CONFIG_POWERSAVE	rcc.h	/^	CLOCK_CONFIG_POWERSAVE,$/;"	e	enum:Clock_config
@@ -49,6 +51,10 @@ PIN_7	io.h	/^	PIN_7					= (1 << 7),$/;"	e	enum:io_pin
 PIN_8	io.h	/^	PIN_8					= (1 << 8),$/;"	e	enum:io_pin
 PIN_9	io.h	/^	PIN_9					= (1 << 9),$/;"	e	enum:io_pin
 PIN_ALL	io.h	/^	PIN_ALL					= 0xFFFF$/;"	e	enum:io_pin
+RCC_CFGR_ADCPRE_DIV_2	rcc.c	/^#define RCC_CFGR_ADCPRE_DIV_2	/;"	d	file:
+RCC_CFGR_ADCPRE_DIV_4	rcc.c	/^#define RCC_CFGR_ADCPRE_DIV_4	/;"	d	file:
+RCC_CFGR_ADCPRE_DIV_6	rcc.c	/^#define RCC_CFGR_ADCPRE_DIV_6	/;"	d	file:
+RCC_CFGR_ADCPRE_DIV_8	rcc.c	/^#define RCC_CFGR_ADCPRE_DIV_8	/;"	d	file:
 RCC_CFGR_HPRE_DIV_128	rcc.c	/^#define RCC_CFGR_HPRE_DIV_128	/;"	d	file:
 RCC_CFGR_HPRE_DIV_16	rcc.c	/^#define RCC_CFGR_HPRE_DIV_16	/;"	d	file:
 RCC_CFGR_HPRE_DIV_256	rcc.c	/^#define RCC_CFGR_HPRE_DIV_256	/;"	d	file:
@@ -79,11 +85,15 @@ TIM1_UP_IRQHandler	timer.c	/^void TIM1_UP_IRQHandler(void) {$/;"	f	typeref:typen
 TIM2_IRQHandler	timer.c	/^void TIM2_IRQHandler(void) {$/;"	f	typeref:typename:void
 TIM3_IRQHandler	timer.c	/^void TIM3_IRQHandler(void) {$/;"	f	typeref:typename:void
 TIM4_IRQHandler	timer.c	/^void TIM4_IRQHandler(void) {$/;"	f	typeref:typename:void
+TIMER_H	timer.h	/^#define TIMER_H$/;"	d
 _Clock_t	rcc.h	/^typedef struct _Clock_t {$/;"	s
 _IO_H_	io.h	/^#define _IO_H_$/;"	d
 _RCC_H_	rcc.h	/^#define _RCC_H_$/;"	d
-_TIMER_H_	timer.h	/^#define _TIMER_H_$/;"	d
+__anon0f12ca630108	adc.h	/^typedef struct {$/;"	s
 _clock_config	rcc.c	/^static struct ClockConfig_t _clock_config[] = {$/;"	v	typeref:struct:ClockConfig_t[]	file:
+adc_init	adc.c	/^int adc_init(ADC_TypeDef* adc) {$/;"	f	typeref:typename:int
+adc_read	adc.c	/^int adc_read(void) {$/;"	f	typeref:typename:int
+adcpre	rcc.c	/^	uint8_t		adcpre;$/;"	m	struct:ClockConfig_t	typeref:typename:uint8_t	file:
 ahb_freq	rcc.c	/^	uint32_t	ahb_freq;$/;"	m	struct:ClockConfig_t	typeref:typename:uint32_t	file:
 ahb_freq	rcc.h	/^	uint32_t	ahb_freq;$/;"	m	struct:_Clock_t	typeref:typename:uint32_t
 apb1_freq	rcc.c	/^	uint32_t	apb1_freq;$/;"	m	struct:ClockConfig_t	typeref:typename:uint32_t	file:
@@ -117,7 +127,7 @@ rcc_osc_off	rcc.c	/^static void rcc_osc_off(enum rcc_osc osc)$/;"	f	typeref:type
 rcc_osc_on	rcc.c	/^static void rcc_osc_on(enum rcc_osc osc)$/;"	f	typeref:typename:void	file:
 rcc_osc	rcc.c	/^enum rcc_osc {$/;"	g	file:
 rcc_set_sysclk	rcc.c	/^static void rcc_set_sysclk(enum rcc_osc osc)$/;"	f	typeref:typename:void	file:
-timer_config_cb	timer.c	/^int timer_config_cb(TIM_TypeDef* tmr, OnTick cb) {$/;"	f	typeref:typename:int
+timer_config_cb	timer.c	/^int timer_config_cb(TIM_TypeDef* tmr, uint32_t* clk, OnTick cb) {$/;"	f	typeref:typename:int
 timer_set_period	timer.c	/^int timer_set_period(TIM_TypeDef *tmr, uint16_t tick) {$/;"	f	typeref:typename:int
 timer_start	timer.c	/^void timer_start(TIM_TypeDef *tmr) {$/;"	f	typeref:typename:void
 timer_stop	timer.c	/^void timer_stop(TIM_TypeDef *tmr) {$/;"	f	typeref:typename:void

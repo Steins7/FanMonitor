@@ -1,11 +1,13 @@
 #include "drivers/rcc.h"
 #include "drivers/io.h"
+#include "drivers/adc.h"
 
 Clock_t sysclks;
 
 #include "drivers/timer.h"
 
 int val = 0;
+uint16_t data = 0;
 
 static void timeout_cb(void) {
 	io_write(GPIOC, val, PIN_13);
@@ -20,12 +22,16 @@ int main(void) {
 		return 0;
 	io_write(GPIOC, 1, PIN_13);
 
-	//timer_tick_init(TIM2, 1000, timeout_cb);
-	//timer_start(TIM2);
+	timer_tick_init(TIM2, 1000, timeout_cb);
+	timer_start(TIM2);
+
+	if(io_configure(GPIOA, PIN_4 | PIN_5, IO_MODE_INPUT | IO_IN_ANALOG, 0))
+		return 0;
+	if(adc_init(ADC1)) return 0;
 
 	for(;;){
-		timer_wait_ms(TIM1, 500, 0);
-		timer_wait_ms(TIM2, 500, timeout_cb);
+		data = adc_read(ADC1, 5);
+		data -= adc_read(ADC1, 4);
 	}
 
 	return 0;

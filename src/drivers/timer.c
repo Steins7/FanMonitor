@@ -263,8 +263,6 @@ void timer_start(TIM_TypeDef *tmr) {
 
 	// enable counting
 	tmr->CR1 |= 1;
-
-
 }
 
 void timer_stop(TIM_TypeDef *tmr) {

@@ -1,13 +1,9 @@
-#ifndef _TIMER_H_
-#define _TIMER_H_
+#ifndef TIMER_H
+#define TIMER_H
 
 #include "../target/stm32f103xb.h"
 #include "../config.h"
 #include "rcc.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif 
 
 typedef void (*OnTick)(void);
 
@@ -81,8 +77,5 @@ void timer_stop(TIM_TypeDef *tmr);
 // */
 //#define pwm_stop(pwm)	timer_stop(pwm)
 
-#ifdef __cplusplus
-}
-#endif
 #endif
 
