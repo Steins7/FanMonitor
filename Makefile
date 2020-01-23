@@ -12,6 +12,7 @@ EXE_PREFIX=main
 # project folders, This Makefile should be in the same folder as the SRC folder
 SRC=src
 BIN=bin
+INC=include
 LIB=lib
 OBJ=${BIN}/obj
 DEP=${BIN}/dep
@@ -25,10 +26,6 @@ LDSCRIPT=${SRC}/target/STM32F103XB.ld
 UDEFS=
 # Define ASM defines here
 UADEFS=
-# List all user directories here
-UINCDIR=.
-# List the user directory to look for the libraries here
-ULIBDIR=
 
 # --- toolchain configuration
 TARGET=arm-none-eabi-
@@ -40,10 +37,10 @@ OBJDUMP=$(TARGET)objdump
 
 # --- hardware settings
 ARCH=armv7-m
-FLOAT-ABI=soft
+FLOAT-ABI=soft #no FPU on stm32f103
 CPU=cortex-m3
 CPUFLAGS=-mthumb
-FPU=fpv4-sp-d16
+FPU=fpv4-sp-d16 #"FLOAT-ABI=soft" disable that
 
 ##-----------------------------------------------------------------------------
 # --- makefile pre-incantation
@@ -52,12 +49,6 @@ FPU=fpv4-sp-d16
 DDEFS=-march=$(ARCH) -mfloat-abi=$(FLOAT-ABI) -mcpu=$(CPU) -mfpu=$(FPU) $(CPUFLAGS)
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS=-D__ASSEMBLY__
-# List all default directories to look for include files here
-DINCDIR=
-# List the default directory to look for the libraries here
-DLIBDIR=
-# List all default libraries here
-DLIBS=
 
 # --- deduce file names
 MAIN_C_FILES=${wildcard ${SRC}/${strip ${EXE_PREFIX}}*.c}
@@ -78,7 +69,6 @@ LIBRARIES=${foreach dir,${wildcard ${LIB}/*},${wildcard ${LIB}/${dir}/*.a}}
 
 DEFS  =$(DDEFS) $(UDEFS)
 ADEFS =$(DADEFS) $(UADEFS)
-ASFLAGS=$(INCDIR) $(DEFS) -Wa,--gdwarf2 $(ADEFS)
 
 ifeq (${strip ${RELEASE}},0)
     CFLAGS=-g3 -O0
@@ -86,10 +76,10 @@ else
     CFLAGS=-O3
 endif
  
-ASFLAGS = $(INCDIR) $(DEFS) -Wa,--gdwarf2 $(ADEFS)
+ASFLAGS = $(LIB) $(DEFS) -Wa,--gdwarf2 $(ADEFS)
 CFLAGS+=-std=c17 -Wall $(DEFS) -Wextra -Warray-bounds -Wno-unused-parameter -fomit-frame-pointer
 LDFLAGS= -T$(LDSCRIPT) -lc -lgcc -lgcov -lm -Wl,-Map=$@.map,--gc-sections --specs=nosys.specs
-INC=-I${LIB}
+INCLUDE=-I${INC}
 
 # --- Generate dependency information
 #CFLAGS += -MD -MP -MF ${DEP}/$(@F0).d
@@ -114,9 +104,11 @@ ${BIN}/%.elf : ${MAIN_OBJECT_FILES} ${COMMON_OBJECT_FILES}
 	@echo
 	@echo ==== linking $@ ====
 	@echo ${COMMON_OBJECT_FILES}
+	@echo ====================
+	@echo ${LIBRARIES}
 	@echo
 	${DIR_GUARD}
-	${CC} --verbose -o $@ ${filter-out %ld, $^} ${LIBRARIES} ${LDFLAGS}
+	${CC} ${CFLAGS} --verbose -o $@ ${filter-out %ld, $^} ${LIBRARIES} ${LDFLAGS}
 	${OBJDUMP} -h $@
 	${SIZE} $@
 	@${SKIP_LINE}
@@ -138,7 +130,7 @@ ${OBJ}/%.o : ${SRC}/%.c
 	@echo ==== compiling [opt=${opt}] $< ====
 	@echo
 	${DIR_GUARD}
-	${CC} ${INC} -c ${CFLAGS} $< -o $@ ${LIBRARIES}
+	${CC} ${INCLUDE} -c ${CFLAGS} $< -o $@ ${LIBRARIES}
 	@${SKIP_LINE}
 
 ${BIN}/%.o : ${SRC}/%.c
@@ -146,7 +138,7 @@ ${BIN}/%.o : ${SRC}/%.c
 	@echo ==== compiling [opt=${opt}] $< ====
 	@echo
 	${DIR_GUARD}
-	${CC} ${INC} -c ${CFLAGS} $< -o $@ ${LIBRARIES}
+	${CC} ${INCLUDE} -c ${CFLAGS} $< -o $@ ${LIBRARIES}
 	@${SKIP_LINE}
 
 ${OBJ}/%.o : ${SRC}/%.s
