@@ -1,10 +1,6 @@
 #ifndef _IO_H_
 #define _IO_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif 
-
 //------------------------------------------------------------------------------
 /* GPIO pin mask definitions */
 enum io_pin {
@@ -81,6 +77,7 @@ enum io_conf {
 //
 typedef void (*OnIO)();
 
+//------------------------------------------------------------------------------
 /* io_configure
  *
  * configure pins referenced in 'pin_mask' of specified port
@@ -88,7 +85,8 @@ typedef void (*OnIO)();
  * function 'cb' if not NULL.
  * returns 0 if success
  */
-int io_configure(GPIO_TypeDef *gpio, uint16_t pin_mask, uint8_t pin_cfg, OnIO cb);
+int io_configure(GPIO_TypeDef *gpio, uint16_t pin_mask, uint8_t pin_cfg, 
+		OnIO cb);
 
 /* io_read
  *
@@ -117,7 +115,5 @@ void io_write_n(GPIO_TypeDef *gpio, uint16_t val, uint16_t mask);
 void io_set(GPIO_TypeDef *gpio, uint16_t mask);
 void io_clear(GPIO_TypeDef *gpio, uint16_t mask);
 
-#ifdef __cplusplus
-}
 #endif
-#endif
+
