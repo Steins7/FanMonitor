@@ -88,12 +88,3 @@
 //#define SPI5_GPIO_PORT
 //#define SPI5_GPIO_PINS			
 
-/****************************************************************************
- *  ADC pin and use configuration 
- ****************************************************************************/
-
-// ADC1: ADC1_0 --> PA0, ADC1_1 -->PA1
-//#define USE_ADC1
-//#define ADC1_GPIO_PORT		_GPIOA
-//#define ADC1_GPIO_PINS		PIN_0|PIN_1
-

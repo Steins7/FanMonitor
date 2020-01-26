@@ -3,9 +3,6 @@
 extern Clock_t sysclks;
 
 //------------------------------------------------------------------------------
-/** timerX_isr
- *  timerX ISR (Interrupt Service Routine)
- */
 static OnTick callback1 = 0;
 static OnTick callback2 = 0;
 static OnTick callback3 = 0;
@@ -31,6 +28,7 @@ void TIM4_IRQHandler(void) {
 	TIM4->SR &= ~0x1F;
 }
 
+//------------------------------------------------------------------------------
 int timer_config_cb(TIM_TypeDef* tmr, uint32_t* clk, OnTick cb) {
 	IRQn_Type irqn;
 	uint32_t irq_priority;
