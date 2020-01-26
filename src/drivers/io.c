@@ -116,14 +116,14 @@ int io_configure(GPIO_TypeDef *gpio, uint16_t pin, uint8_t pin_cfg, OnIO cb) {
 	uint64_t crx = pin_mask * 0x4; //reset value is 0x4
 	uint16_t odr = pin;
 	gpio->CRH &= ~(crx >> 32);
-	gpio->CRL &= ~(crx & 0xFFFF);
+	gpio->CRL &= ~(crx & 0xFFFFFFFF);
 	gpio->BSRR |= odr << 16;
 
 	// set up the new configuration
 	crx = pin_mask * (pin_cfg & 0xF);
 	odr = pin_cfg & 0x10;
 	gpio->CRH |= crx >> 32;
-	gpio->CRL |= crx & 0xFFFF;
+	gpio->CRL |= crx & 0xFFFFFFFF;
 	gpio->BSRR |= odr;
 
 	//if (!cb) return -1; //no callback attached
