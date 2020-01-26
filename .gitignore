@@ -1,4 +1,5 @@
 bin
 .gdb_history
-src/tags
+*tags
 *.taghl
+*.~lock*

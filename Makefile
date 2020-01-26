@@ -104,8 +104,6 @@ ${BIN}/%.elf : ${MAIN_OBJECT_FILES} ${COMMON_OBJECT_FILES}
 	@echo
 	@echo ==== linking $@ ====
 	@echo ${COMMON_OBJECT_FILES}
-	@echo ====================
-	@echo ${LIBRARIES}
 	@echo
 	${DIR_GUARD}
 	${CC} ${CFLAGS} --verbose -o $@ ${filter-out %ld, $^} ${LIBRARIES} ${LDFLAGS}
