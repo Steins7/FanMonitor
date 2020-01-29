@@ -5,6 +5,7 @@
 #include "../config.h"
 #include "timer.h"
 #include "io.h"
+#include <stdlib.h>
 
 //------------------------------------------------------------------------------
 /* LCD mode selection */
@@ -17,7 +18,7 @@ enum lcd_register {
 /* LCD commands */
 enum lcd_command {
 	LCD_CLEAR			= 0x01,
-	LCD_CR				= 0x02,
+	LCD_CUR_HOME		= 0x02,
 	LCD_ENTRY			= 0x04,
 	LCD_DISP_CTRL		= 0x08,
 	LCD_SHIFT			= 0x10,
@@ -67,11 +68,24 @@ enum lcd_func_option {
 };
 
 //------------------------------------------------------------------------------
-int lcd_init(TIM_TypeDef* tim);
+/** lcd_init
+ * 	initialise the lcd, needed before anything else can be done
+ * 	the timer is used for delays and can't be in use when lcd functions are 
+ * 	called
+ */
+int lcd_init(TIM_TypeDef* tim, uint8_t col, uint8_t row);
 
-void lcd_write(uint8_t byte);
+/** lcd_send_cmd
+ * 	send the specified command to the lcd
+ */
+void lcd_send_cmd(uint8_t cmd);
 
-uint8_t lcd_read(void);
+/** lcd_print
+ *  print a null-terminated string on the lcd
+ */
+void lcd_print(const char* txt);
+
+void lcd_set_cursor(uint8_t col, uint8_t row);
 
 #endif
 

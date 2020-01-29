@@ -6,8 +6,8 @@ STACK_SIZE = 0x400;
 
 MEMORY
 { 
-  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 64K
-  RAM (rwx) : ORIGIN = 0x200000F0, LENGTH = 20K - (0xEC+0x4)
+  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 32K
+  RAM (rwx) : ORIGIN = 0x200000F0, LENGTH = 10K - (0xEC+0x4)
 }
 
 /* Linker script to place sections and symbol values. Should be used together

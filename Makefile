@@ -4,7 +4,7 @@
 # --- control global project settings
 # RELEASE=1 -> enable optimisation, then disable debug
 # RELEASE=0 -> disbale optimisation, then enable debug
-RELEASE=0
+RELEASE=1
 
 # --- project architecture
 # program name

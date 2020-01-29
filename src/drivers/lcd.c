@@ -6,7 +6,11 @@ enum mode {
 	UNDEFINED
 };
 
-static int mode = UNDEFINED; 
+//TODO make the driver dynamic ?
+static TIM_TypeDef* timer = 0;
+static uint8_t mode = UNDEFINED; 
+static uint8_t rows = 0;
+static uint8_t columns = 0;
 
 //------------------------------------------------------------------------------
 // internal functions
@@ -39,18 +43,19 @@ int set_mode_write(void) {
 }
 
 void wait_for_ready(void) {
-	// configure the lcd
-	if(mode != READ) if(set_mode_read()) return;
-
-	// read D7 pin
-	for(;;) {
-		io_set(GPIOA, PIN_11);
-		for(int i=0; i<1000; ++i); //timer_wait is overkill here
-		if(!io_read(GPIOB, PIN_4)) break;
-		io_clear(GPIOA, PIN_11);
-		for(int i=0; i<1000; ++i); //same
-	}
-	io_clear(GPIOA, PIN_11);
+	//TODO debug that
+//	// configure the lcd
+//	if(mode != READ) if(set_mode_read()) return;
+//
+//	// read D7 pin
+//	for(;;) {
+//		io_set(GPIOA, PIN_11);
+//		for(int i=0; i<1000; ++i); //timer_wait is overkill here
+//		if(!io_read(GPIOB, PIN_4)) break;
+//		io_clear(GPIOA, PIN_11);
+//		for(int i=0; i<1000; ++i); //same
+//	}
+	timer_wait_ms(timer, 2, 0); //wait max delay
 }
 
 void write_byte(uint8_t byte) {
@@ -59,7 +64,7 @@ void write_byte(uint8_t byte) {
 
 	// start tranfert
 	io_set(GPIOA, PIN_11);
-	timer_wait_us(TIM1, 1, 0);
+	timer_wait_us(timer, 1, 0);
 	
 	// send the data
 	io_write(GPIOA, (byte >> 0) & 0x1, PIN_8);
@@ -76,8 +81,12 @@ void write_byte(uint8_t byte) {
 }
 
 //------------------------------------------------------------------------------
-// API functions
-int lcd_init(TIM_TypeDef* tim) {
+int lcd_init(TIM_TypeDef* tim, uint8_t col, uint8_t row) {
+
+	timer = tim;
+	columns = col;
+	rows = row;
+
 	// disable JTAG, as it utilise needed pins, SWD remains usable in 
 	// synchronous mode
 	RCC->APB2ENR |= 0x1;
@@ -91,17 +100,17 @@ int lcd_init(TIM_TypeDef* tim) {
 	if(set_mode_write()) return -1; //no check in case the pins were used 
 									//somewhere else
 
-	// select instrution register
+	// select instruction register
 	io_write(GPIOA, LCD_MODE_CMD, PIN_10);
 
 	// begin initialisation sequence
-	timer_wait_ms(tim, 15, 0);
+	timer_wait_ms(timer, 15, 0);
 	write_byte(LCD_FUNC_SET | LCD_FUNC_8BIT | LCD_FUNC_2LINE | 
 			LCD_FUNC_5x8DOTS);
-	timer_wait_ms(tim, 5, 0);
+	timer_wait_ms(timer, 5, 0);
 	write_byte(LCD_FUNC_SET | LCD_FUNC_8BIT | LCD_FUNC_2LINE | 
 			LCD_FUNC_5x8DOTS);
-	timer_wait_us(tim, 150, 0);
+	timer_wait_us(timer, 150, 0);
 	write_byte(LCD_FUNC_SET | LCD_FUNC_8BIT | LCD_FUNC_2LINE | 
 			LCD_FUNC_5x8DOTS);
 	wait_for_ready();
@@ -121,7 +130,39 @@ int lcd_init(TIM_TypeDef* tim) {
 			LCD_CTRL_BLINK_ON);
 	wait_for_ready();
 	write_byte(LCD_CLEAR);
-	wait_for_ready();
 
 	return 0;
+}
+
+void lcd_send_cmd(uint8_t cmd) {
+	// wait for the screen
+	wait_for_ready();
+
+	// select instruction register
+	io_write(GPIOA, LCD_MODE_CMD, PIN_10);	
+
+	// send the command
+	write_byte(cmd);
+}
+
+void lcd_print(const char* txt) {
+	// prepare data
+	const char* c = txt;
+	
+	// wait for the screen
+	wait_for_ready();
+
+	// select data register
+	io_write(GPIOA, LCD_MODE_DATA, PIN_10);
+
+	// send the caracters until end of string
+	while(*c != '\0') {
+		wait_for_ready();
+		write_byte(*c);
+		c++;
+	}
+}
+
+void lcd_set_cursor(uint8_t col, uint8_t row) {
+	lcd_send_cmd(LCD_DDRAM_ADDR | col);
 }
