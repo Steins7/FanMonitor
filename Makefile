@@ -4,7 +4,7 @@
 # --- control global project settings
 # RELEASE=1 -> enable optimisation, then disable debug
 # RELEASE=0 -> disbale optimisation, then enable debug
-RELEASE=1
+RELEASE=0
 
 # --- project architecture
 # program name
@@ -52,12 +52,10 @@ DADEFS=-D__ASSEMBLY__
 
 # --- deduce file names
 MAIN_C_FILES=${wildcard ${SRC}/${strip ${EXE_PREFIX}}*.c}
-COMMON_C_FILES=${filter-out ${MAIN_C_FILES},${wildcard *.c} \
+COMMON_C_FILES=${filter-out ${MAIN_C_FILES},${wildcard ${SRC}/*.c} \
 			   	 ${foreach dir,${SUBFOLDERS},${wildcard ${SRC}/${dir}/*.c}}}
-			   	 #${wildcard ${TC}*.c}}
 COMMON_ASM_FILES=${filter-out ${MAIN_CXX_FILES},${wildcard *.s} \
 				   ${foreach dir,${SUBFOLDERS},${wildcard ${SRC}/${dir}/*.s}}}
-				   #${wildcard ${TC}*.s}}
 MAIN_OBJECT_FILES=${sort ${patsubst ${SRC}/%.c,${OBJ}/%.o,${MAIN_C_FILES}}}
 COMMON_OBJECT_FILES=${sort ${patsubst ${SRC}/%.c,${OBJ}/%.o,${COMMON_C_FILES}} \
                       ${patsubst ${SRC}/%.s,${OBJ}/%.o,${COMMON_ASM_FILES}}}

@@ -11,6 +11,7 @@ static TIM_TypeDef* timer = 0;
 static uint8_t mode = UNDEFINED; 
 static uint8_t rows = 0;
 static uint8_t columns = 0;
+static uint8_t rows_offset[4] = {};
 
 //------------------------------------------------------------------------------
 // internal functions
@@ -86,6 +87,10 @@ int lcd_init(TIM_TypeDef* tim, uint8_t col, uint8_t row) {
 	timer = tim;
 	columns = col;
 	rows = row;
+	rows_offset[0] = 0x00;
+	rows_offset[1] = 0x40;
+	rows_offset[2] = 0x00 + columns;
+	rows_offset[3] = 0x40 + columns;
 
 	// disable JTAG, as it utilise needed pins, SWD remains usable in 
 	// synchronous mode
@@ -163,6 +168,17 @@ void lcd_print(const char* txt) {
 	}
 }
 
+void lcd_print_c(char c) {
+	// wait for the screen
+	wait_for_ready();
+
+	// select data register
+	io_write(GPIOA, LCD_MODE_DATA, PIN_10);
+
+	// send the caracter
+	write_byte(c);
+}
+
 void lcd_set_cursor(uint8_t col, uint8_t row) {
-	lcd_send_cmd(LCD_DDRAM_ADDR | col);
+	lcd_send_cmd(LCD_DDRAM_ADDR | (col + rows_offset[row]));
 }

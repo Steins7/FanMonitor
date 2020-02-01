@@ -19,7 +19,7 @@ int adc_init(ADC_TypeDef* adc) {
 	// set trigger to manual
 	adc->CR1 |= 0x7 << 3;
 
-	adc->SMPR2 |= 0x7;
+	adc->SMPR2 |= 0x3FFFFFFF;
 
 	// calibrate
 	adc->CR2 |= 0x1 << 2;
@@ -37,6 +37,6 @@ uint16_t adc_read(ADC_TypeDef* adc, uint8_t channel) {
 	adc->CR2 |= 0x1;
 	while(!((adc->SR >> 1) & 0x1)); //waiting for convertion
 	
-	return adc->DR & 0xFFFF;
+	return adc->DR & 0xFFF;
 	
 }
