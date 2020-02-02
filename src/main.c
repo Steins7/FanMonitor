@@ -16,6 +16,7 @@ Clock_t sysclks;
 //------------------------------------------------------------------------------
 /* static variables */
 int val = 0;
+int	count = 0; 
 uint16_t data = 0;
 int16_t voltage = 0;
 int16_t temp = 0;
@@ -24,7 +25,14 @@ int16_t temp = 0;
 /* Timer IRQ */
 static void timeout_cb(void) {
 	io_write(GPIOC, val, PIN_13);
+	io_write(GPIOB, val, PIN_12);
 	val = !val;
+	data = adc_read(ADC1, 2);
+	data -= adc_read(ADC1, 3);
+}
+
+static void enc_button_cb(void) {
+	count = !count;	
 }
 
 //------------------------------------------------------------------------------
@@ -36,7 +44,11 @@ int main(void) {
 	// configure GPIO for LED
 	if(io_configure(GPIOC, PIN_13, IO_MODE_OUTPUT | IO_OUT_PUSH_PULL, 0)) 
 		return 0;
+	if(io_configure(GPIOB, PIN_12, IO_MODE_OUTPUT | IO_OUT_PUSH_PULL, 0)) 
+		return 0;
+
 	io_write(GPIOC, 1, PIN_13);
+	io_write(GPIOB, 1, PIN_12);
 
 	// configure GPIOS for temperature sensors
 	if(io_configure(GPIOA, PIN_0 | PIN_1 | PIN_2 | PIN_3 | PIN_4 | PIN_5, 
@@ -52,6 +64,13 @@ int main(void) {
 	lcd_send_cmd(LCD_DISP_CTRL | LCD_CTRL_DISP_ON | LCD_CTRL_CUR_OFF | 
 			LCD_CTRL_BLINK_OFF);
 
+	// configure encoder
+	io_configure(GPIOB, PIN_6 | PIN_7, IO_MODE_INPUT | IO_IN_FLOATING, 0);
+	timer_enc_init(TIM4);
+
+	io_configure(GPIOB, PIN_8, IO_MODE_INPUT | IO_IN_PULL_UP | 
+			IO_IRQ_EDGE_FALL, enc_button_cb);
+
 	// start timed interruption
 	timer_tick_init(TIM2, 1000, timeout_cb);
 	timer_start(TIM2);
@@ -59,13 +78,15 @@ int main(void) {
 	// main loop
 	while(1){
 		// update T1
-		data = adc_read(ADC1, 0);
-		data -= adc_read(ADC1, 1);
+		//data = adc_read(ADC1, 0);
+		//data -= adc_read(ADC1, 1);
 
-		voltage = ((data*4) << 8)/4095;
-		temp = ((voltage - 0x73) << 8)/0x9;
+		//voltage = ((data*4) << 8)/4095;
+		//temp = ((voltage - 0x73) << 8)/0x9;
 
-		update_temp(T1, temp);
+		uint32_t pin = io_read(GPIOB, PIN_8);
+		if(!pin) count = !count;
+		if(count) update_temp(T1, (int16_t)TIM4->CNT/2);
 
 		// update T2
 		data = adc_read(ADC1, 2);

@@ -42,6 +42,9 @@ void timer_start(TIM_TypeDef *tmr);
 void timer_stop(TIM_TypeDef *tmr);
 
 //------------------------------------------------------------------------------
+int timer_enc_init(TIM_TypeDef* tmr);
+
+//------------------------------------------------------------------------------
 //#define PWM_CHANNEL_1		0
 //#define PWM_CHANNEL_2		1
 //#define PWM_CHANNEL_3		2

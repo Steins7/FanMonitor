@@ -94,7 +94,7 @@ int lcd_init(TIM_TypeDef* tim, uint8_t col, uint8_t row) {
 
 	// disable JTAG, as it utilise needed pins, SWD remains usable in 
 	// synchronous mode
-	RCC->APB2ENR |= 0x1;
+	RCC->APB2ENR |= 0x1; //enable AFIO clocking
 	AFIO->MAPR = (AFIO->MAPR & ~(0x8 << 24)) | 0x2 << 24;
 	
 	// configure the lcd control pins
@@ -182,3 +182,4 @@ void lcd_print_c(char c) {
 void lcd_set_cursor(uint8_t col, uint8_t row) {
 	lcd_send_cmd(LCD_DDRAM_ADDR | (col + rows_offset[row]));
 }
+

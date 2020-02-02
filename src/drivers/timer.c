@@ -268,3 +268,38 @@ void timer_stop(TIM_TypeDef *tmr) {
 	tmr->CR1 &= !1;
 }
 
+//------------------------------------------------------------------------------
+int timer_enc_init(TIM_TypeDef* tmr) {
+	// enable timer
+	if (tmr == TIM1) {
+		RCC->APB2ENR |= 1<<11;
+
+	} else if (tmr == TIM2) {
+		RCC->APB1ENR |= 1<<0;
+
+	} else if (tmr == TIM3) {
+		RCC->APB1ENR |= 1<<1;
+
+	} else if (tmr == TIM4) {
+		RCC->APB1ENR |= 1<<2;
+	
+	} else return -1; //no such timer
+
+	//TODO set registers at reset value
+	
+	tmr->SMCR |= 0x1; //count on only one edge
+	tmr->ARR = (1 << 16)-1; 
+
+	// map inputs
+	tmr->CCMR1 |= 0x9;
+	tmr->CCMR1 |= 0x9 << 8;
+	
+	// enable input channels
+	tmr->CCER |= 0x1;
+	tmr->CCER |= 0x1 << 4;
+
+	tmr->CR1 |= 0x1; //enable timer
+
+	return 0;
+}
+

@@ -70,11 +70,14 @@ enum io_conf {
 //	PIN_OPT_AF15			0xF
 //};
 
-///*   irq pin option */
-//#define PIN_OPT_IRQ_EDGE_RISE		(1 << 12)
-//#define PIN_OPT_IRQ_EDGE_FALL		(2 << 12)
-//#define PIN_OPT_IRQ_EDGE_BOTH		(3 << 12)
-//
+//------------------------------------------------------------------------------
+/* GPIO IRQ conf definitons */
+enum io_irq_conf {
+	IO_IRQ_EDGE_RISE	= (0x1 << 8),
+	IO_IRQ_EDGE_FALL	= (0x2 << 8),
+	IO_IRQ_EDGE_BOTH	= (0x3 << 8)
+};
+
 typedef void (*OnIO)();
 
 //------------------------------------------------------------------------------
@@ -85,7 +88,7 @@ typedef void (*OnIO)();
  * function 'cb' if not NULL.
  * returns 0 if success
  */
-int io_configure(GPIO_TypeDef *gpio, uint16_t pin_mask, uint8_t pin_cfg, 
+int io_configure(GPIO_TypeDef *gpio, uint16_t pin_mask, uint16_t pin_cfg, 
 		OnIO cb);
 
 /* io_read

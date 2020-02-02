@@ -18,7 +18,7 @@ uint32_t num2str(char *s, int number, uint8_t base) {
 	*s='\0';
 
 	// reverse string
-	uint32_t cnt = s - p;
+	int cnt = s - p;
 	char tmp;
 	for(int i=0; i<cnt/2; ++i) {
 		tmp = p[i];

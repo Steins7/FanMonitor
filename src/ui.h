@@ -19,14 +19,6 @@ enum temp {
 	T2		= 2		
 };
 
-/** temp_pos
- *  coords of the temprature ids
- */
-static uint8_t temp_pos[][2] = {
-	{11, 0},
-	{ 2, 1},
-	{11, 1}};
-
 /**	update_temp
  * 	update on the lcd the given value for the corresponding id
  */
