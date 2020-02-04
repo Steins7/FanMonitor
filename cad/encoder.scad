@@ -1,4 +1,4 @@
-//$fn = 100;
+$fn = 100;
 
 r = 12;
 h = 12;
@@ -25,9 +25,9 @@ difference() {
             cube([3,2*center_r,h], center=true);
     }
     difference() {
-        translate([0,0,0.7])
+        translate([0,0,3])
             cylinder(h=h, r=0.8*r, center=true);
-        translate([0,0,0.7])
+        translate([0,0,3])
             cylinder(h=h, r=1.4*center_r, center=true);
         
     }

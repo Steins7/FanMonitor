@@ -84,8 +84,8 @@ int main(void) {
 		//voltage = ((data*4) << 8)/4095;
 		//temp = ((voltage - 0x73) << 8)/0x9;
 
-		uint32_t pin = io_read(GPIOB, PIN_8);
-		if(!pin) count = !count;
+		//uint32_t pin = io_read(GPIOB, PIN_8);
+		//if(!pin) count = !count;
 		if(count) update_temp(T1, (int16_t)TIM4->CNT/2);
 
 		// update T2

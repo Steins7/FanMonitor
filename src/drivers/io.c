@@ -17,31 +17,26 @@ static OnIO io_cb[16]={
 
 void EXTI0_IRQHandler() {
 	if (io_cb[0]) (io_cb[0])();
-
 	EXTI->PR = 1<<0;
 }
 
 void EXTI1_IRQHandler() {
 	if (io_cb[1]) (io_cb[1])();
-
 	EXTI->PR = 1<<1;
 }
 
 void EXTI2_IRQHandler() {
 	if (io_cb[2]) (io_cb[2])();
-
 	EXTI->PR = 1<<2;
 }
 
 void EXTI3_IRQHandler() {
 	if (io_cb[3]) (io_cb[3])();
-
 	EXTI->PR = 1<<3;
 }
 
 void EXTI4_IRQHandler() {
 	if (io_cb[4]) (io_cb[4])();
-
 	EXTI->PR = 1<<4;
 }
 
@@ -143,9 +138,9 @@ int io_configure(GPIO_TypeDef *gpio, uint16_t pin, uint16_t pin_cfg, OnIO cb) {
 	else if (gpio == GPIOE) port_mask = SYSCFG_EXTI_PE_MASK;
 
 	// setup external IRQ lines
-	uint16_t afio_mask;
+	uint64_t afio_mask;
 	for(int i=0; i<4; ++i) {
-		afio_mask = ((pin_mask & (0xFFFF << i)) >> i) * port_mask;
+		afio_mask = ((pin_mask & (0xFFFFll << (i*16))) >> (i*16)) * port_mask;
 		if(afio_mask) AFIO->EXTICR[i] |= afio_mask;
 	}
 
@@ -204,7 +199,6 @@ int io_configure(GPIO_TypeDef *gpio, uint16_t pin, uint16_t pin_cfg, OnIO cb) {
 					break;
 				default:
 					return -1; //impossible to get there
-
 			}
 		}
 	}
