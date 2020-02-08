@@ -108,19 +108,22 @@ int timer_wait_ms(TIM_TypeDef* tmr, uint16_t ms, OnTick cb) {
 			else if (tmr == TIM4) RCC->APB1ENR |= 1<<2;
 			else return -1;			// no such timer
 		}
+		
+		// set period
+		tmr->ARR = 0xFFFFFFFF;
 
 	} else { //non-blocking
 		if(timer_config_cb(tmr, &clk, cb)) return -1;
+
+		// set period
+		tmr->ARR = ms-1;
 	}
 
 	// set mode
-	tmr->CR1 |= (1<<7);  		//buffering
+	tmr->CR1 = (1<<7) | (1<<2);  //buffering and update settings
 	tmr->CR1 |= (1<<3);			//one pulse mode
 
-	// set period
-	tmr->ARR = 0xFFFFFFFF;
-
-	// set prescaler 1us
+		// set prescaler 1ms
 	tmr->PSC = 8*(clk/1000)-1; 	//PSC = clk/f - 1 | don't know why 8 times..
 
 	timer_start(tmr);
@@ -149,16 +152,19 @@ int timer_wait_us(TIM_TypeDef* tmr, uint16_t us, OnTick cb) {
 			else return -1;			// no such timer
 		}
 
+		// set period
+		tmr->ARR = 0xFFFFFFFF;
+
 	} else { //non-blocking
 		if(timer_config_cb(tmr, &clk, cb)) return -1;
+		
+		// set period
+		tmr->ARR = us-1;
 	}
 
 	// set mode
-	tmr->CR1 |= (1<<7);  		//buffering
+	tmr->CR1 = (1<<7) | (1<<2);  //buffering and update settings
 	tmr->CR1 |= (1<<3);			//one pulse mode
-
-	// set period
-	tmr->ARR = 0xFFFFFFFF;
 
 	// set prescaler 1us
 	tmr->PSC = 8*(clk/1000000)-1; 	//PSC = clk/f - 1 | don't know why 8 times..
@@ -229,8 +235,8 @@ int timer_tick_init(TIM_TypeDef *tmr, uint16_t tick_ms, OnTick cb) {
 	tmr->SR &= !1;
 
 	// set mode
-	tmr->CR1 = (1<<7);  	//buffering
-	tmr->DIER = (1<<0); 	//Enable interrupts
+	tmr->CR1 = (1<<7) | (1<<2);  //buffering and update settings
+	tmr->DIER = (1<<0); //Enable interrupts
 
 	// set prescaler 1ms
 	tmr->PSC = 8*(clk/1000)-1; //PSC = clk/f - 1 | don't know why 8 times...

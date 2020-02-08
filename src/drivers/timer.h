@@ -42,6 +42,10 @@ void timer_start(TIM_TypeDef *tmr);
 void timer_stop(TIM_TypeDef *tmr);
 
 //------------------------------------------------------------------------------
+/** timer_enc_init
+ *  setup timer to read encoder output and keep track of it's position in the
+ *  CNT register whithout using CPU time
+ */
 int timer_enc_init(TIM_TypeDef* tmr);
 
 //------------------------------------------------------------------------------
