@@ -161,6 +161,7 @@ void lcd_print(const char* txt) {
 	io_write(GPIOA, LCD_MODE_DATA, PIN_10);
 
 	// send the caracters until end of string
+	// TODO implement '\n'
 	while(*c != '\0') {
 		wait_for_ready();
 		write_byte(*c);

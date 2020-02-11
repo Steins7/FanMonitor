@@ -14,100 +14,133 @@ Clock_t sysclks;
 #include "ui.h"
 
 //------------------------------------------------------------------------------
-/* static variables */
-int val = 0;
-int	count = 0; 
-uint16_t data = 0;
-int16_t voltage = 0;
-int16_t temp = 0;
+/* static variables */;
+int val = 0; //debug led
+int read_flag = 0; 
+int sensor_id = 0;
+
+// low_pass filter
+#define FILTER_LENGTH 10
+int16_t temp_filter[3][FILTER_LENGTH] = {};
+
+// adc channels
+uint8_t channels[3][2] = {
+	{4, 5},
+	{0, 1},
+	{2, 3}
+};
+
+vars_t vars = {
+	{},
+	2,
+	2,
+	{},
+	1,
+	0
+};
 
 //------------------------------------------------------------------------------
 /* Timer IRQ */
 static void timeout_cb(void) {
-	io_write(GPIOC, val, PIN_13);
-	io_write(GPIOB, val, PIN_12);
+	//io_write(GPIOC, val, PIN_13);
 	val = !val;
-	data = adc_read(ADC1, 2);
-	data -= adc_read(ADC1, 3);
-}
 
-static void enc_button_cb(void) {
-	count = !count;	
+	// set temp read flag
+	read_flag = 1;
+	}
+
+int16_t read_temp(uint8_t id) {
+	// get ADC values
+	uint32_t data = 0;	
+	data = adc_read(ADC1, channels[id][0]);
+	data -= adc_read(ADC1, channels[id][1]);
+
+	int16_t voltage = ((data*4) << 8)/4095 ;
+	
+	return ((voltage - 0x73) << 8)/0x9 + vars.facs[id][0];
 }
 
 //------------------------------------------------------------------------------
 /* main function */
 int main(void) {
 
+	// configure clocks (necessary before using timers)
 	rcc_config_clock(CLOCK_CONFIG_PERFORMANCE, &sysclks);
 
 	// configure GPIO for LED
 	if(io_configure(GPIOC, PIN_13, IO_MODE_OUTPUT | IO_OUT_PUSH_PULL, 0)) 
-		return 0;
+		return -1;
 	if(io_configure(GPIOB, PIN_12, IO_MODE_OUTPUT | IO_OUT_PUSH_PULL, 0)) 
-		return 0;
+		return -1;
 
 	io_write(GPIOC, 1, PIN_13);
 	io_write(GPIOB, 1, PIN_12);
 
 	// configure GPIOS for temperature sensors
 	if(io_configure(GPIOA, PIN_0 | PIN_1 | PIN_2 | PIN_3 | PIN_4 | PIN_5, 
-		IO_MODE_INPUT | IO_IN_ANALOG, 0)) return 0;
-	if(adc_init(ADC1)) return 0;
+		IO_MODE_INPUT | IO_IN_ANALOG, 0)) return -1;
+	if(adc_init(ADC1)) return -1;
 
-	// configure lcd
-	lcd_init(TIM1, 16, 2);
-	lcd_send_cmd(LCD_CUR_HOME);
-	lcd_print("SILO:1  Te: 18""\xDF""C");
-	lcd_set_cursor(0,1);
-	lcd_print("1: 25""\xDF""C  2: 26""\xDF""C");
-	lcd_send_cmd(LCD_DISP_CTRL | LCD_CTRL_DISP_ON | LCD_CTRL_CUR_OFF | 
-			LCD_CTRL_BLINK_OFF);
+	// initilize filter
+	for(int i=0; i<3; ++i) {
+		int16_t tmp = read_temp(i);
+		for(int j=0; j<FILTER_LENGTH; ++j) {
+			temp_filter[i][j] = tmp;
+		}
+	}
 
-	// configure encoder
-	io_configure(GPIOB, PIN_6 | PIN_7, IO_MODE_INPUT | IO_IN_FLOATING, 0);
-	timer_enc_init(TIM4);
-
-	io_configure(GPIOB, PIN_8, IO_MODE_INPUT | IO_IN_PULL_UP | 
-			IO_IRQ_EDGE_FALL, enc_button_cb);
-
+	// setup ui
+	if(ui_init(TIM4, TIM3, &vars)) return -1;
+	
 	// start timed interruption
 	timer_tick_init(TIM2, 1000, timeout_cb);
 	timer_start(TIM2);
 
 	// main loop
 	while(1){
-		// update T1
-		//data = adc_read(ADC1, 0);
-		//data -= adc_read(ADC1, 1);
+		// process sensor values
+		if(read_flag) {
+			// clear flag
+			read_flag = 0;
 
-		//voltage = ((data*4) << 8)/4095;
-		//temp = ((voltage - 0x73) << 8)/0x9;
+			// shift filter queue
+			int32_t sum = 0;
+			for(int i=0; i<(FILTER_LENGTH-1); ++i) {
+				temp_filter[sensor_id][i] = temp_filter[sensor_id][i+1];
+				sum += temp_filter[sensor_id][i];
+			}
 
-		//uint32_t pin = io_read(GPIOB, PIN_8);
-		//if(!pin) count = !count;
-		if(count) update_temp(T1, (int16_t)TIM4->CNT/2);
+			// calculate temp value
+			temp_filter[sensor_id][FILTER_LENGTH-1] = read_temp(sensor_id);
 
-		// update T2
-		data = adc_read(ADC1, 2);
-		data -= adc_read(ADC1, 3);
+			// apply filter
+			sum += temp_filter[sensor_id][FILTER_LENGTH-1];
+			vars.temps[sensor_id] = (sum/FILTER_LENGTH) >> 8;
 
-		voltage = ((data*4) << 8)/4095;
-		temp = ((voltage - 0x73) << 8)/0x9;
+			// print new value
+			ui_update_temp(sensor_id);
 
-		update_temp(T2, temp);
+			// switch to next sensor
+			sensor_id++;
+			sensor_id = sensor_id%3;
 
-		// update T_ext
-		data = adc_read(ADC1, 4);
-		data -= adc_read(ADC1, 5);
-
-		voltage = ((data*4) << 8)/4095;
-		temp = ((voltage - 0x73) << 8)/0x9;
-
-		update_temp(T_EXT, temp);
+			// set fan state
+			if((vars.temps[vars.silo] - vars.temps[T_EXT]) >= 
+					vars.start_treshold) {
+				vars.fan = 1;
+				io_set(GPIOB, PIN_12);
+				io_clear(GPIOC, PIN_13);
+			} else if((vars.temps[T_EXT] - vars.temps[vars.silo]) >= 
+					vars.stop_treshold) {
+				vars.fan = 0;
+				io_clear(GPIOB, PIN_12);
+				io_set(GPIOC, PIN_13);
+			}
+		}
 
 		// update every 0.2 seconds
-		timer_wait_ms(TIM1, 200, 0);
+		ui_update();
+		//timer_wait_ms(TIM1, 200, 0);
 	}
 
 	return 0;
