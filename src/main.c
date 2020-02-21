@@ -32,7 +32,7 @@ uint8_t channels[3][2] = {
 
 vars_t vars = {
 	{},
-	2,
+	5,
 	2,
 	{},
 	1,
@@ -42,7 +42,7 @@ vars_t vars = {
 //------------------------------------------------------------------------------
 /* Timer IRQ */
 static void timeout_cb(void) {
-	//io_write(GPIOC, val, PIN_13);
+	io_write(GPIOC, val, PIN_13);
 	val = !val;
 
 	// set temp read flag
@@ -64,16 +64,22 @@ int16_t read_temp(uint8_t id) {
 /* main function */
 int main(void) {
 
+	//initialize variables
+	val = 0; //debug led
+	read_flag = 0; 
+	sensor_id = 0;
+
 	// configure clocks (necessary before using timers)
 	rcc_config_clock(CLOCK_CONFIG_PERFORMANCE, &sysclks);
 
 	// configure GPIO for LED
 	if(io_configure(GPIOC, PIN_13, IO_MODE_OUTPUT | IO_OUT_PUSH_PULL, 0)) 
 		return -1;
+	io_write(GPIOC, 1, PIN_13);
+
+	// configure GPIO for relay
 	if(io_configure(GPIOB, PIN_12, IO_MODE_OUTPUT | IO_OUT_PUSH_PULL, 0)) 
 		return -1;
-
-	io_write(GPIOC, 1, PIN_13);
 	io_write(GPIOB, 1, PIN_12);
 
 	// configure GPIOS for temperature sensors
@@ -98,14 +104,16 @@ int main(void) {
 
 	// main loop
 	while(1){
+
 		// process sensor values
 		if(read_flag) {
+
 			// clear flag
 			read_flag = 0;
 
 			// shift filter queue
 			int32_t sum = 0;
-			for(int i=0; i<(FILTER_LENGTH-1); ++i) {
+			for(int i=0; i<(FILTER_LENGTH-2); i++) {
 				temp_filter[sensor_id][i] = temp_filter[sensor_id][i+1];
 				sum += temp_filter[sensor_id][i];
 			}
@@ -129,12 +137,10 @@ int main(void) {
 					vars.start_treshold) {
 				vars.fan = 1;
 				io_set(GPIOB, PIN_12);
-				io_clear(GPIOC, PIN_13);
-			} else if((vars.temps[T_EXT] - vars.temps[vars.silo]) >= 
+			} else if((vars.temps[vars.silo] - vars.temps[T_EXT]) <= 
 					vars.stop_treshold) {
 				vars.fan = 0;
 				io_clear(GPIOB, PIN_12);
-				io_set(GPIOC, PIN_13);
 			}
 		}
 

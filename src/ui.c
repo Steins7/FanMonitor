@@ -14,16 +14,22 @@ static const char* ui_default[] = {
 	"SILO:   Te:   ""\xDF""C",
 	"1:   ""\xDF""C  2:   ""\xDF""C"
 };
+
 static const char* ui_menu[] = {
 	" 1-Retour",
 	" 2-Silo:",
 	" 3-Start:",
 	" 4-Stop:",
-	" 5-Calibrer Te",
-	" 6-Calibrer T1",
-	" 7-Calibrer T2",
-	" 8-Test ventil",
+//	" 5-Calibrer Te",
+//	" 6-Calibrer T1",
+//	" 7-Calibrer T2",
+//	" 8-Test ventil",
 	" 1-Retour"
+};
+
+static const char* ui_interact[] = {
+	" lue:        ""\xDF""C",
+	" reelle:     ""\xDF""C"
 };
 
 //------------------------------------------------------------------------------
@@ -36,6 +42,42 @@ void show_bg(const char** bg) {
 	lcd_print(bg[1]);
 }
 
+void update_entry(uint8_t prev_entry, uint8_t value) {
+	// get vlaue in str form
+	char str[8]; //too long to be sure
+	num2str(str, value, 10);
+
+	// print value in the correct position
+	if(sel == prev_entry) lcd_set_cursor(14, 1);
+	else lcd_set_cursor(14, 0);
+	lcd_print(str);
+}
+
+void change_value(uint8_t entry, uint8_t* entry_val, int max) {
+	int local_val = *entry_val;
+	lcd_set_cursor(14,0);
+	while(!button_update) {
+		local_val = ((enc->CNT/2)%max) + 1;
+		char str[8];
+		num2str(str, local_val, 10);
+		lcd_print(str);
+		lcd_set_cursor(14,0);
+		timer_wait_ms(TIM1, 200, 0);
+	}
+	*entry_val = local_val;
+}
+
+void interact(uint8_t entry, uint8_t* entry_val) {
+	while(!button_update) {
+		lcd_set_cursor(10,0);
+		lcd_print("   ");
+		lcd_set_cursor(10,0);
+
+		lcd_set_cursor(10,0);
+		lcd_print("   ");
+	}
+}
+
 //------------------------------------------------------------------------------
 /* timeout timer cb */
 static void ui_sleep(void) {
@@ -44,7 +86,7 @@ static void ui_sleep(void) {
 
 /* encoder button gpio cb */
 static void ui_button_cb(void) {
-	for(int i=0; i<10000; ++i); //avoid double trigger
+	for(int i=0; i<1000000; ++i); //avoid double trigger
 	timer_start(tim);
 	button_update = 1;
 }
@@ -81,34 +123,6 @@ int ui_init(TIM_TypeDef* encoder, TIM_TypeDef* timeout, vars_t* vars_p) {
 	return 0;
 }
 
-void ui_update_entry(uint8_t prev_entry, uint8_t value) {
-	// get vlaue in str form
-	char str[8]; //too long to be sure
-	num2str(str, value, 10);
-
-	// print value in the correct position
-	if(sel == prev_entry) lcd_set_cursor(14, 1);
-	else lcd_set_cursor(14, 0);
-	lcd_print(str);
-
-}
-
-void ui_change_value(uint8_t entry, uint8_t* entry_val, int max) {
-	int local_val = *entry_val;
-	lcd_set_cursor(14,0);
-	while(!button_update) {
-		local_val = ((enc->CNT/2)%max) + 1;
-		char str[8];
-		num2str(str, local_val, 10);
-		lcd_print(str);
-		lcd_set_cursor(14,0);
-		timer_wait_ms(TIM1, 200, 0);
-	}
-	*entry_val = local_val;
-}
-	
-
-
 void ui_update(void) {
 	// manage button press
 	if(button_update) {
@@ -141,6 +155,10 @@ void ui_update(void) {
 				}
 
 				// otherwise interact with option
+				if(sel == UI_CAL_T_EXT || sel == UI_CAL_T1 
+									   || sel == UI_CAL_T2) {
+					show_bg(ui_interact);
+				}
 				lcd_send_cmd(LCD_DISP_CTRL | LCD_CTRL_DISP_ON | 
 							LCD_CTRL_CUR_ON | LCD_CTRL_BLINK_OFF);
 				timer_start(enc);
@@ -192,15 +210,15 @@ void ui_update(void) {
 
 				// show silo value if needed
 				if(sel == UI_RETURN || sel == UI_SILO) {
-					ui_update_entry(UI_RETURN, vars->silo);
+					update_entry(UI_RETURN, vars->silo);
 				}
 				// show start value if needed
 				if(sel == UI_SILO || sel == UI_START) {
-					ui_update_entry(UI_SILO, vars->start_treshold);
+					update_entry(UI_SILO, vars->start_treshold);
 				}
 				// show start value if needed
 				if(sel == UI_START || sel == UI_STOP) {
-					ui_update_entry(UI_START, vars->stop_treshold);
+					update_entry(UI_START, vars->stop_treshold);
 				}
 			}
 			break;
@@ -208,16 +226,14 @@ void ui_update(void) {
 		case UI_INTERACT:
 			switch(sel) {
 				case UI_SILO:
-					ui_change_value(UI_SILO, &vars->silo, 2);
+					change_value(UI_SILO, &vars->silo, 2);
 					break;
 				case UI_START:
-					ui_change_value(UI_START, &vars->start_treshold, 9);
+					change_value(UI_START, &vars->start_treshold, 9);
 					break;
 				case UI_STOP:
-					ui_change_value(UI_STOP, &vars->stop_treshold, 9);
+					change_value(UI_STOP, &vars->stop_treshold, 9);
 					break;
-
-
 			}
 		//---------------------
 		case UI_DEFAULT:

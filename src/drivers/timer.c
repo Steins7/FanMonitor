@@ -300,9 +300,9 @@ int timer_enc_init(TIM_TypeDef* tmr) {
 	tmr->CCMR1 |= 0x9;
 	tmr->CCMR1 |= 0x9 << 8;
 	
-	// enable input channels
-	tmr->CCER |= 0x1;
-	tmr->CCER |= 0x1 << 4;
+	// enable input channels and invert them //TODO add an otpion for that
+	tmr->CCER |= 0x3;
+	tmr->CCER |= 0x3 << 4;
 
 	tmr->CR1 |= 0x1; //enable timer
 

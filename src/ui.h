@@ -53,7 +53,7 @@ enum ui_menu {
 	UI_TEST			= 7
 };
 
-#define MENU_LENGHT 7
+#define MENU_LENGHT 3
 
 //------------------------------------------------------------------------------
 /** ui_init

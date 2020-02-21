@@ -6,5 +6,7 @@
 
 uint32_t num2str(char *s, int number, uint8_t base);
 
+//void print_num(int number, 
+
 #endif
 
