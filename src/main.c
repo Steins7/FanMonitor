@@ -78,9 +78,9 @@ int main(void) {
 	io_write(GPIOC, 1, PIN_13);
 
 	// configure GPIO for relay
-	if(io_configure(GPIOB, PIN_12, IO_MODE_OUTPUT | IO_OUT_PUSH_PULL, 0)) 
+	if(io_configure(GPIOB, PIN_11, IO_MODE_OUTPUT | IO_OUT_PUSH_PULL, 0)) 
 		return -1;
-	io_write(GPIOB, 1, PIN_12);
+	io_write(GPIOB, 1, PIN_11);
 
 	// configure GPIOS for temperature sensors
 	if(io_configure(GPIOA, PIN_0 | PIN_1 | PIN_2 | PIN_3 | PIN_4 | PIN_5, 
@@ -113,7 +113,7 @@ int main(void) {
 
 			// shift filter queue
 			int32_t sum = 0;
-			for(int i=0; i<(FILTER_LENGTH-2); i++) {
+			for(int i=0; i<(FILTER_LENGTH-1); ++i) {
 				temp_filter[sensor_id][i] = temp_filter[sensor_id][i+1];
 				sum += temp_filter[sensor_id][i];
 			}
@@ -135,12 +135,16 @@ int main(void) {
 			// set fan state
 			if((vars.temps[vars.silo] - vars.temps[T_EXT]) >= 
 					vars.start_treshold) {
-				vars.fan = 1;
-				io_set(GPIOB, PIN_12);
+				if(!vars.fan) {
+					io_set(GPIOB, PIN_11);
+					vars.fan = 1;
+				}
 			} else if((vars.temps[vars.silo] - vars.temps[T_EXT]) <= 
 					vars.stop_treshold) {
-				vars.fan = 0;
-				io_clear(GPIOB, PIN_12);
+				if(vars.fan) {
+					io_clear(GPIOB, PIN_11);
+					vars.fan = 0;
+				}
 			}
 		}
 
